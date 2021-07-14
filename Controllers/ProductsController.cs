@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -56,6 +57,7 @@ namespace MyOnlineStoreAPI.Controllers
 
         [HttpPost]
         [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
         public async Task<ActionResult<Product>> CreateProduct(ProductRequest request)
         {
             var product = request.ToModel();
@@ -68,6 +70,7 @@ namespace MyOnlineStoreAPI.Controllers
 
         [HttpPut("{id}")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<Product>> UpdateProduct(int id, ProductRequest request)
         {
@@ -96,7 +99,7 @@ namespace MyOnlineStoreAPI.Controllers
         }
     }
 
-    public class ProductRequest
+    public class ProductRequest : IValidatableObject
     {
         public string Name { get; set; }
 
@@ -106,6 +109,15 @@ namespace MyOnlineStoreAPI.Controllers
             {
                 Name = Name
             };
+        }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+                yield return new ValidationResult("Name can't be empty.");
+
+            if (Name?.Length < 5)
+                yield return new ValidationResult("Name must be at least 5 characters.");
         }
     }
 

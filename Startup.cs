@@ -33,7 +33,7 @@ namespace MyOnlineStoreAPI
 
             services.AddHttpClient<CurrencyService>((serviceProvider, client) => 
             {
-                var options = serviceProvider.GetRequiredService<IOptionsSnapshot<CurrencyScoopOptions>>().Value;
+                var options = serviceProvider.GetRequiredService<IOptions<CurrencyScoopOptions>>().Value;
                 client.BaseAddress = new System.Uri(options.BaseUrl);
             });
             
