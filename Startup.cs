@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MyOnlineStoreAPI.Data;
+using MyOnlineStoreAPI.Helpers;
 
 namespace MyOnlineStoreAPI
 {
@@ -25,7 +27,16 @@ namespace MyOnlineStoreAPI
             {
                 options.UseNpgsql("Host=localhost;Database=my_store;Username=postgres;Password=root");
             });
+            
+            services.Configure<CurrencyScoopOptions>(Configuration.GetSection("CurrencyScoop"));
+            services.AddScoped<CurrencyService>();
 
+            services.AddHttpClient<CurrencyService>((serviceProvider, client) => 
+            {
+                var options = serviceProvider.GetRequiredService<IOptionsSnapshot<CurrencyScoopOptions>>().Value;
+                client.BaseAddress = new System.Uri(options.BaseUrl);
+            });
+            
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
