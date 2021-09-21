@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -87,6 +88,8 @@ namespace MyOnlineStoreAPI
                         options.Authority = "https://my-online-store.eu.auth0.com/";
                         options.Audience = "https://api.my-online-shop.com";
                     });
+
+            services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

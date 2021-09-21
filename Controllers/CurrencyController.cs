@@ -6,7 +6,7 @@ using MyOnlineStoreAPI.Helpers;
 
 namespace MyOnlineStoreAPI.Controllers
 {
-    [Authorize]
+    [Authorize (Roles = "admin")]
     [Route("[controller]")]
     [ApiController]
     public class CurrencyController : ControllerBase
