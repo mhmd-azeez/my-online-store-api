@@ -29,6 +29,10 @@ namespace MyOnlineStoreAPI.Data
         public string Id { get; set; }
         [MaxLength(36)]
         public string Name { get; set; }
+        [MaxLength(60)]
+        public string Email { get; set; }
+        
+        
         [MaxLength(20)]
         public string Role { get; set; }
     }

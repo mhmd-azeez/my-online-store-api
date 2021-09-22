@@ -41,7 +41,19 @@ namespace MyOnlineStoreAPI
                 var options = serviceProvider.GetRequiredService<IOptions<CurrencyScoopOptions>>().Value;
                 client.BaseAddress = new System.Uri(options.BaseUrl);
             });
+
+            services.AddHttpClient("IdPClient", httpClient =>
+            {
+               httpClient.BaseAddress = new Uri("https://my-online-store.eu.auth0.com");
+            });
+
+            services.AddHttpClient("Auth0Client", httpClient =>
+            {
+               httpClient.BaseAddress = new Uri("https://my-online-store.eu.auth0.com/api/v2/");
+            });
             
+            services.AddScoped<Auth0Service>();
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -50,8 +62,7 @@ namespace MyOnlineStoreAPI
                 c.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme()
                 {
                     Type = SecuritySchemeType.OAuth2,
-                    OpenIdConnectUrl = new Uri("https://my-online-store.eu.auth0.com/.well-known/openid-configuration"),
-                    
+
                     Flows = new OpenApiOAuthFlows
                     {
                         AuthorizationCode = new OpenApiOAuthFlow
