@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyOnlineStoreAPI.Data;
+using MyOnlineStoreAPI.Helpers;
 
 namespace MyOnlineStoreAPI.Controllers
 {
@@ -21,6 +22,7 @@ namespace MyOnlineStoreAPI.Controllers
             _dbContext = dbContext;
         }
         
+        [Authorize (Policy = Permissions.ProductsList)]
         [HttpGet]
         public async Task<Page<Product>> GetAllProducts(
             string name = "", int pageIndex = 0, int pageSize = 3)
@@ -46,6 +48,7 @@ namespace MyOnlineStoreAPI.Controllers
             };
         }
 
+        [Authorize (Policy = Permissions.ProductsGet)]
         [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
@@ -57,6 +60,7 @@ namespace MyOnlineStoreAPI.Controllers
             return product;
         }
 
+        [Authorize (Policy = Permissions.ProductsCreate)]
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ProducesResponseType(201)]
@@ -71,7 +75,7 @@ namespace MyOnlineStoreAPI.Controllers
             return Created(Url.Action(nameof(GetProductById), new { id = product.Id } ), product);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize (Policy = Permissions.ProductsUpdate)]
         [HttpPut("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -88,7 +92,7 @@ namespace MyOnlineStoreAPI.Controllers
             return product;
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize (Policy = Permissions.ProductsDelete)]
         [HttpDelete("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
