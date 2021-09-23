@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace MyOnlineStoreAPI.Helpers
 {
@@ -27,11 +28,15 @@ namespace MyOnlineStoreAPI.Helpers
     {
         private HttpClient _idpClient;
         private HttpClient _auth0Client;
+        private AuthOptions _authOptions;
 
-        public Auth0Service(IHttpClientFactory httpClientFactory)
+        public Auth0Service(
+            IHttpClientFactory httpClientFactory,
+            IOptions<AuthOptions> authOptions)
         {
             _idpClient = httpClientFactory.CreateClient("IdPClient");
             _auth0Client = httpClientFactory.CreateClient("Auth0Client");
+            _authOptions = authOptions.Value;
         }
 
         // https://auth0.com/docs/api/management/v2#!/Users_By_Email/get_users_by_email
@@ -72,12 +77,12 @@ namespace MyOnlineStoreAPI.Helpers
             var response = await _idpClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
                 Address = document.TokenEndpoint,
-                ClientId = "oxYD5eLd0rruHwAHaiHcx6wFkqymyhA0",
-                ClientSecret = "Jw54bJy4Uvyjh3gjz2Ja4jx_j8vI6SZ7c3prruPpmulU2RR_8PxoHz8iZic2r_vA",
+                ClientId = _authOptions.M2MClientId,
+                ClientSecret = _authOptions.M2MClientSecret,
                 Scope = "read:users",
                 Parameters = new Parameters(new Dictionary<string, string>
                 {
-                    { "audience", "https://my-online-store.eu.auth0.com/api/v2/" }
+                    { "audience", _authOptions.ManagementApiUrl }
                 })
             });
 

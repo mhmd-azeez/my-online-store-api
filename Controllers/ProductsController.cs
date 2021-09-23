@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyOnlineStoreAPI.Data;
 
 namespace MyOnlineStoreAPI.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
@@ -18,7 +20,7 @@ namespace MyOnlineStoreAPI.Controllers
         {
             _dbContext = dbContext;
         }
-
+        
         [HttpGet]
         public async Task<Page<Product>> GetAllProducts(
             string name = "", int pageIndex = 0, int pageSize = 3)
@@ -55,6 +57,7 @@ namespace MyOnlineStoreAPI.Controllers
             return product;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
@@ -68,6 +71,7 @@ namespace MyOnlineStoreAPI.Controllers
             return Created(Url.Action(nameof(GetProductById), new { id = product.Id } ), product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -84,6 +88,7 @@ namespace MyOnlineStoreAPI.Controllers
             return product;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]

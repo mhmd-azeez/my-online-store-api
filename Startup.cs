@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -42,14 +43,17 @@ namespace MyOnlineStoreAPI
                 client.BaseAddress = new System.Uri(options.BaseUrl);
             });
 
-            services.AddHttpClient("IdPClient", httpClient =>
+            services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
+            var authOptions = Configuration.GetOptions<AuthOptions>("Auth");
+
+            services.AddHttpClient("IdPClient", (serviceProvider, httpClient) =>
             {
-               httpClient.BaseAddress = new Uri("https://my-online-store.eu.auth0.com");
+               httpClient.BaseAddress = new Uri(authOptions.Authority);
             });
 
             services.AddHttpClient("Auth0Client", httpClient =>
             {
-               httpClient.BaseAddress = new Uri("https://my-online-store.eu.auth0.com/api/v2/");
+               httpClient.BaseAddress = new Uri(authOptions.ManagementApiUrl);
             });
             
             services.AddScoped<Auth0Service>();
@@ -67,8 +71,8 @@ namespace MyOnlineStoreAPI
                     {
                         AuthorizationCode = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = new Uri("https://my-online-store.eu.auth0.com/authorize"),
-                            TokenUrl = new Uri("https://my-online-store.eu.auth0.com/oauth/token"),
+                            AuthorizationUrl = new Uri($"{authOptions.Authority}/authorize"),
+                            TokenUrl = new Uri($"{authOptions.Authority}/oauth/token"),
 
                             // https://auth0.com/docs/configure/apis/scopes
                             // https://auth0.com/docs/configure/apis/scopes/openid-connect-scopes
@@ -96,15 +100,25 @@ namespace MyOnlineStoreAPI
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
                     {
-                        options.Authority = "https://my-online-store.eu.auth0.com/";
-                        options.Audience = "https://api.my-online-shop.com";
+                        options.Authority = authOptions.Authority;
+                        options.Audience = authOptions.Audience;
                     });
+
+            services.AddSingleton<IAuthorizationHandler, RoleOrSuperAdminRequirementHandler>();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOrSuperAdmin", builder =>
+                {
+                   builder.AddRequirements(new RoleOrSuperAdminRequirement("Admin"));
+                });
+            });
 
             services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<AuthOptions> authOptions)
         {
             if (env.IsDevelopment())
             {
@@ -113,10 +127,10 @@ namespace MyOnlineStoreAPI
                 app.UseSwaggerUI(c => 
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyOnlineStoreAPI v1");
-                    c.OAuthClientId("Iw5MdATlJXNBO6PUjNx6CpIflE0wJw8v");
+                    c.OAuthClientId(authOptions.Value.SwaggerClientId);
                     c.OAuthAdditionalQueryStringParams(new Dictionary<string, string>
                     {
-                        { "audience", "https://api.my-online-shop.com" }
+                        { "audience", authOptions.Value.Audience }
                     });
                     c.OAuthUsePkce();
                     c.OAuthAppName("Test Name");

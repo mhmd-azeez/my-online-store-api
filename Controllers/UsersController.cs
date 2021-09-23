@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineStoreAPI.Data;
 using MyOnlineStoreAPI.Helpers;
 
 namespace MyOnlineStoreAPI.Controllers
 {
+    [Authorize(Policy = "AdminOrSuperAdmin")]
     [Route("[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -22,7 +24,7 @@ namespace MyOnlineStoreAPI.Controllers
             _dbContext = dbContext;
         }
 
-        [HttpGet("search")]
+        [HttpGet("Search")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<List<Auth0User>> Search(
@@ -31,7 +33,7 @@ namespace MyOnlineStoreAPI.Controllers
             return await _auth0Service.SearchAsync(email);
         }
 
-        [HttpPost("onboard")]
+        [HttpPost("Onboard")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<User>> Onboard(UserOnboardRequest request)
