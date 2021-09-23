@@ -3,46 +3,24 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MyOnlineStoreAPI.Helpers
 {
-
-    public static class AuthorizationExtensions
+    public class RoleOrSuperAdminRequirement : IAuthorizationRequirement
     {
-        public static void AddPermissionPolicy(this AuthorizationOptions options, string permission)
+        public RoleOrSuperAdminRequirement(string role)
         {
-            options.AddPolicy(permission, builder => builder.AddRequirements(new PermissionRequirement(permission)));
-        }
-    }
-
-    public static class Permissions
-    {
-        public const string CurrencyGet = "Currency:Get";
-        
-        public const string ProductsList = "Products:List";
-        public const string ProductsGet = "Products:Get";
-        public const string ProductsUpdate = "Products:Update";
-        public const string ProductsCreate = "Products:Create";
-        public const string ProductsDelete = "Products:Delete";
-
-        public const string UsersSearch = "Users:Search";
-        public const string UsersOnboard = "Users:Onboard";
-    }
-
-    public class PermissionRequirement : IAuthorizationRequirement
-    {
-        public PermissionRequirement(string permission)
-        {
-            Permission = permission;
+            Role = role;
         }
 
-        public string Permission { get; }
+        public string Role { get; }
     }
 
-    public class PermissionRequirementHandler : AuthorizationHandler<PermissionRequirement>
+    public class RoleOrSuperAdminRequirementHandler : AuthorizationHandler<RoleOrSuperAdminRequirement>
     {
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
-             PermissionRequirement requirement)
+             RoleOrSuperAdminRequirement requirement)
         {
-            if (context.User.HasClaim("permissions", requirement.Permission))
+            if (context.User.HasClaim("permissions", "superadmin") ||
+                context.User.IsInRole(requirement.Role))
             {
                 context.Succeed(requirement);
             }

@@ -8,7 +8,7 @@ using MyOnlineStoreAPI.Helpers;
 
 namespace MyOnlineStoreAPI.Controllers
 {
-    [Authorize()]
+    [Authorize(Policy = "AdminOrSuperAdmin")]
     [Route("[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -24,8 +24,7 @@ namespace MyOnlineStoreAPI.Controllers
             _dbContext = dbContext;
         }
 
-        [Authorize (Policy = Permissions.UsersSearch)]
-        [HttpPost("Search")]
+        [HttpGet("Search")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<List<Auth0User>> Search(
@@ -34,7 +33,6 @@ namespace MyOnlineStoreAPI.Controllers
             return await _auth0Service.SearchAsync(email);
         }
 
-        [Authorize (Policy = Permissions.UsersOnboard)]
         [HttpPost("Onboard")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]

@@ -18,7 +18,6 @@ namespace MyOnlineStoreAPI.Controllers
             this._currencyService = currencyService;
         }
 
-        [Authorize (Policy = Permissions.CurrencyGet)]
         [HttpGet]
         public async Task<CurrencyResponse> Get()
         {

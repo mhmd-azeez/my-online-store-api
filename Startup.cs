@@ -104,20 +104,14 @@ namespace MyOnlineStoreAPI
                         options.Audience = authOptions.Audience;
                     });
 
-            services.AddSingleton<IAuthorizationHandler, PermissionRequirementHandler>();
+            services.AddSingleton<IAuthorizationHandler, RoleOrSuperAdminRequirementHandler>();
 
             services.AddAuthorization(options =>
             {
-                options.AddPermissionPolicy(Permissions.CurrencyGet);
-
-                options.AddPermissionPolicy(Permissions.ProductsList);
-                options.AddPermissionPolicy(Permissions.ProductsGet);
-                options.AddPermissionPolicy(Permissions.ProductsCreate);
-                options.AddPermissionPolicy(Permissions.ProductsUpdate);
-                options.AddPermissionPolicy(Permissions.ProductsDelete);
-
-                options.AddPermissionPolicy(Permissions.UsersSearch);
-                options.AddPermissionPolicy(Permissions.UsersOnboard);
+                options.AddPolicy("AdminOrSuperAdmin", builder =>
+                {
+                   builder.AddRequirements(new RoleOrSuperAdminRequirement("Admin"));
+                });
             });
 
             services.AddScoped<IClaimsTransformation, UserRoleClaimsTransformation>();
