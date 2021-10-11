@@ -30,7 +30,7 @@ namespace MyOnlineStoreAPI.Controllers
         }
 
         [HttpPost("token")]
-        public async Task<ActionResult<TokenResponse>> LoginFormPost([FromForm] TokenRequest request)
+        public async Task<ActionResult<TokenResponse>> Login([FromForm] TokenRequest request)
         {
             var user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Username.ToLowerInvariant());
             if (user is null) return Unauthorized();
