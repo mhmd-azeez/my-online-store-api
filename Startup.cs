@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +91,15 @@ namespace MyOnlineStoreAPI
                     });
 
             services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
+
+            services.AddScoped<IAuthorizationHandler, IsActiveRequirementHandler>();
+            services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                    .RequireAuthenticatedUser()
+                    .AddRequirements(new IsActiveRequirement())
+                    .Build();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -26,6 +26,7 @@ namespace MyOnlineStoreAPI.Controllers
             _applicationDbContext = applicationDbContext;
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet]
         public async Task<List<UserResponse>> GetAllUsers()
         {
@@ -33,6 +34,7 @@ namespace MyOnlineStoreAPI.Controllers
             return users.Select(u => new UserResponse(u)).ToList();
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserResponse>> GetUserById(int id)
         {
@@ -42,6 +44,7 @@ namespace MyOnlineStoreAPI.Controllers
             return Ok(new UserResponse(user));
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
@@ -81,6 +84,7 @@ namespace MyOnlineStoreAPI.Controllers
             return CreatedAtAction(nameof(GetUserById), new { id = dbUser.Id }, response);
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
