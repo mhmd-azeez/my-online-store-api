@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyOnlineStoreAPI.Helpers;
 
@@ -7,6 +9,7 @@ namespace MyOnlineStoreAPI.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize]
     public class CurrencyController : ControllerBase
     {
         private readonly CurrencyService _currencyService;
