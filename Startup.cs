@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -5,9 +6,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyOnlineStoreAPI.Data;
 using MyOnlineStoreAPI.Helpers;
+
+using System;
+using System.Text;
 
 namespace MyOnlineStoreAPI
 {
@@ -34,14 +39,55 @@ namespace MyOnlineStoreAPI
             services.AddHttpClient<CurrencyService>((serviceProvider, client) => 
             {
                 var options = serviceProvider.GetRequiredService<IOptions<CurrencyScoopOptions>>().Value;
-                client.BaseAddress = new System.Uri(options.BaseUrl);
+                client.BaseAddress = new Uri(options.BaseUrl);
             });
             
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyOnlineStoreAPI", Version = "v1" });
+
+                var scheme = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Password = new OpenApiOAuthFlow
+                        {
+                            TokenUrl = new Uri("/auth/token", UriKind.Relative)
+                        }
+                    },
+
+                    Reference = new OpenApiReference
+                    {
+                        Id = "Bearer",
+                        Type = ReferenceType.SecurityScheme
+                    }
+                };
+
+                c.AddSecurityDefinition("Bearer", scheme);
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { scheme, Array.Empty<string>() }
+                });
             });
+
+            services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
+            var authOptions = Configuration.GetSection("Auth").Get<AuthOptions>();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = authOptions.Issuer,
+                        ValidAudience = authOptions.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authOptions.Secret))
+                    };
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,6 +104,7 @@ namespace MyOnlineStoreAPI
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
